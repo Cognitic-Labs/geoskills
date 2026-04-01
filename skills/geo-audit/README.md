@@ -39,6 +39,7 @@ geo-audit evaluates your site across 4 dimensions organized in 3 layers:
 - llms.txt presence and completeness
 - HTTPS, response time, compression
 - Sitemap, meta tags, Open Graph, canonical URLs
+- Multimedia accessibility (image alt text, key info in text, video transcripts)
 
 ### 2. Content Citability (35%)
 - Answer block quality (Q+A patterns, definitions, FAQ)
@@ -46,6 +47,7 @@ geo-audit evaluates your site across 4 dimensions organized in 3 layers:
 - Statistical density (numbers, sources, data recency)
 - Structural clarity (headings, lists, tables, paragraph length)
 - Expertise signals (author bylines, expert quotes, dates)
+- AI query alignment (conversational coverage, long-tail intent, query-answer directness)
 
 ### 3. Structured Data (20%)
 - Organization/LocalBusiness schema with sameAs
@@ -119,4 +121,10 @@ Full research data available in the `raw/` directory.
 
 ## Related Skills
 
-*More GEO skills coming soon — stay tuned.*
+| Skill | Description |
+|-------|-------------|
+| [geo-fix-content](../geo-fix-content/) | Rewrite content for better AI citability — use after audit identifies low Citability scores |
+| [geo-fix-schema](../geo-fix-schema/) | Generate JSON-LD structured data — use after audit identifies missing schemas |
+| [geo-fix-llmstxt](../geo-fix-llmstxt/) | Generate llms.txt file — use after audit flags missing llms.txt |
+| [geo-compare](../geo-compare/) | Compare GEO scores against competitors |
+| [geo-monitor](../geo-monitor/) | Track GEO score changes over time |

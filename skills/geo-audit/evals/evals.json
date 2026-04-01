@@ -20,14 +20,14 @@
     {
       "id": 2,
       "prompt": "I run a local bakery website at https://example-bakery.com and ChatGPT never mentions us when people ask for bakeries in our area. Can you figure out why?",
-      "expected_output": "A GEO audit focused on local business signals, with business type detected as Local. Should emphasize LocalBusiness schema, directory presence, and NAP consistency. Report should include practical fixes for a small local business.",
+      "expected_output": "This eval tests degraded behavior with an unreachable URL. The audit should detect the URL is unreachable, report it as a critical issue, and still provide general Local business GEO recommendations based on the business context described in the prompt.",
       "files": [],
       "expectations": [
-        "Business type is detected as Local or Local Business",
-        "Schema analysis checks for LocalBusiness markup",
-        "Brand analysis checks for Google Business, Yelp, and local directories",
-        "Issues are prioritized by impact for a small business context",
-        "Report includes actionable fixes a non-technical owner could understand"
+        "URL unreachable is reported as a critical issue",
+        "Business type is inferred as Local from the prompt context",
+        "General Local business GEO recommendations are provided (LocalBusiness schema, directory presence, NAP consistency)",
+        "Report explains that a full audit requires an accessible URL",
+        "Partial results are gracefully handled without crashing"
       ]
     },
     {

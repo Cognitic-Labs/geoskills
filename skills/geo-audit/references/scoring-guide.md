@@ -1,5 +1,9 @@
 # GEO Audit Scoring Guide
 
+> **This file is the Single Source of Truth (SSOT)** for all scoring rubrics, weights, and business type adjustments. Subagent instruction files (`references/agents/*.md`) duplicate scoring tables for self-containment, but this file takes precedence in case of any discrepancy. When updating scoring rules, update this file first, then sync to the relevant subagent files.
+
+**Scoring Model Version: v2** — When comparing historical reports, verify that both reports use the same scoring model version. Reports generated under different versions (e.g., v1 vs v2) have different sub-dimension structures and point allocations, so raw scores are not directly comparable.
+
 ## Composite Score Formula
 
 ```
@@ -33,7 +37,16 @@ Weights are derived from empirical research on AI citation behavior:
 
 ## Business Type Weight Adjustments
 
-Different business types have different AI visibility priorities. Apply these multipliers to sub-dimension scores before computing the dimension total:
+Different business types have different AI visibility priorities. Apply these multipliers to sub-dimension scores before computing the dimension total.
+
+### Calculation Method
+
+**This is the single source of truth for all business type adjustments.** Subagent files and the main SKILL.md reference this section — do not redefine these rules elsewhere.
+
+1. Multiply the sub-dimension raw score by `(1 + adjustment%)`. Example: Answer Blocks raw score 18/25, SaaS +10% → `18 × 1.10 = 19.8 → round to 20`.
+2. **Cap**: The adjusted score must not exceed the sub-dimension's maximum points. Example: if raw = 24/25 and adjustment = +10%, then `24 × 1.10 = 26.4` → capped at 25.
+3. Apply adjustments at the sub-dimension level, then sum to get the dimension total (still capped at 100).
+4. Only the main orchestrator (SKILL.md Phase 3) applies these adjustments during score aggregation. Subagents report raw scores only.
 
 ### SaaS / Technology
 
@@ -84,97 +97,119 @@ Different business types have different AI visibility priorities. Apply these mu
 
 ## Dimension 1: Technical Accessibility (0-100)
 
-### AI Crawler Access (40 points)
+### AI Crawler Access (35 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| robots.txt existence | 5 | Present = 5, Missing = 2 (permissive default) |
+| robots.txt existence | 4 | Present = 4, Missing = 2 (permissive default) |
 | GPTBot access | 5 | Allowed = 5, Blocked = 0 |
 | Google-Extended access | 5 | Allowed = 5, Blocked = 0 |
 | ClaudeBot access | 4 | Allowed = 4, Blocked = 0 |
-| Bytespider access | 3 | Allowed = 3, Blocked = 0 |
+| Bytespider access | 2 | Allowed = 2, Blocked = 0 |
 | PerplexityBot access | 3 | Allowed = 3, Blocked = 0 |
-| Other AI bots (Applebot-Extended, CCBot, cohere-ai, Amazonbot, FacebookBot, Meta-ExternalAgent) | 6 | 1 point each |
-| X-Robots-Tag headers | 4 | No restrictive AI tags = 4 |
-| Meta robots tags | 5 | No noindex/nofollow for AI = 5 |
+| Other AI bots (Applebot-Extended, CCBot, cohere-ai, Amazonbot, FacebookBot, Meta-ExternalAgent) | 5 | ~1 point each (round as needed) |
+| X-Robots-Tag headers | 3 | No restrictive AI tags = 3 |
+| Meta robots tags | 4 | No noindex/nofollow for AI = 4 |
 
-### Rendering & Content Delivery (25 points)
+### Rendering & Content Delivery (22 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| Server-side rendering | 10 | Full SSR = 10, Partial/Hybrid = 7, CSR-only = 2 |
-| llms.txt presence | 8 | Present + valid = 8, Present + incomplete = 4, Missing = 0 |
-| Content in initial HTML | 7 | >80% content in source = 7, 50-80% = 4, <50% = 1 |
+| Server-side rendering | 9 | Full SSR = 9, Partial/Hybrid = 6, CSR-only = 2 |
+| llms.txt presence | 7 | Present + valid = 7, Present + incomplete = 4, Missing = 0 |
+| Content in initial HTML | 6 | >80% content in source = 6, 50-80% = 3, <50% = 1 |
 
-### Speed & Accessibility (20 points)
+### Speed & Accessibility (18 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
 | HTTPS | 5 | Yes = 5, No = 0 |
-| Response time | 5 | <1s = 5, 1-3s = 3, >3s = 1 |
+| Response time | 4 | <1s = 4, 1-3s = 2, >3s = 1 |
 | Compression (gzip/brotli) | 3 | Enabled = 3, Disabled = 0 |
-| Sitemap presence | 4 | Valid XML sitemap = 4, HTML only = 2, None = 0 |
+| Sitemap presence | 3 | Valid XML sitemap = 3, HTML only = 1, None = 0 |
 | Mobile viewport | 3 | Present = 3, Missing = 0 |
 
-### Meta & Header Signals (15 points)
+### Meta & Header Signals (13 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
 | Title tag | 3 | Present + <60 chars = 3, Present + long = 2, Missing = 0 |
 | Meta description | 3 | Present + 120-160 chars = 3, Present + wrong length = 2, Missing = 0 |
 | Canonical URL | 3 | Present + correct = 3, Present + wrong = 1, Missing = 0 |
-| Open Graph tags | 3 | og:title + og:description + og:image = 3, Partial = 1-2, None = 0 |
-| Lang attribute | 3 | Present = 3, Missing = 0 |
+| Open Graph tags | 2 | og:title + og:description + og:image = 2, Partial = 1, None = 0 |
+| Lang attribute | 2 | Present = 2, Missing = 0 |
+
+### Multimedia Accessibility (12 points)
+
+Evaluates whether key information is accessible to AI systems through text rather than locked in non-text media.
+
+| Check | Points | Scoring |
+|-------|--------|---------|
+| Image alt text quality | 4 | Descriptive alt text on key images = 4, Generic/empty alt = 2, No alt attributes = 0 |
+| Key info in text (not images) | 4 | Critical facts/data in HTML text = 4, Some info only in images/infographics = 2, Key content locked in images = 0 |
+| Video/audio text alternatives | 4 | Transcripts or captions provided for video/audio = 4, Video present but no text alternative = 1, No video/audio = 4 (neutral) |
 
 ---
 
 ## Dimension 2: Content Citability (0-100)
 
-### Answer Block Quality (25 points)
+### Answer Block Quality (20 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| Q+A pattern presence | 8 | Clear question-answer blocks = 8, Implicit = 4, None = 0 |
-| Definition blocks | 6 | "[Term] is..." patterns = 6, Vague definitions = 3, None = 0 |
-| FAQ content sections | 6 | Structured FAQ = 6, Informal Q&A = 3, None = 0 |
-| Direct answer leads | 5 | Paragraphs starting with direct answers = 5, Buried answers = 2, None = 0 |
+| Q+A pattern presence | 7 | Clear question-answer blocks = 7, Implicit = 4, None = 0 |
+| Definition blocks | 5 | "[Term] is..." patterns = 5, Vague definitions = 3, None = 0 |
+| FAQ content sections | 4 | Structured FAQ = 4, Informal Q&A = 2, None = 0 |
+| Direct answer leads | 4 | Paragraphs starting with direct answers = 4, Buried answers = 2, None = 0 |
 
-### Self-Containment (20 points)
+### Self-Containment (18 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| Context independence | 8 | Passages understandable standalone = 8, Need context = 3 |
+| Context independence | 7 | Passages understandable standalone = 7, Need context = 3 |
 | Term definitions inline | 6 | Technical terms defined at first use = 6, Assumed knowledge = 2 |
-| Complete thought units | 6 | Each section is self-contained = 6, Cross-references required = 2 |
+| Complete thought units | 5 | Each section is self-contained = 5, Cross-references required = 2 |
 
-### Statistical Density (20 points)
+### Statistical Density (17 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| Quantitative data | 7 | Specific numbers/percentages present = 7, Vague = 2 |
-| Source citations | 7 | Named sources for claims = 7, Unsourced = 2 |
-| Data recency | 6 | Data within 2 years = 6, 2-5 years = 3, >5 years = 1 |
+| Quantitative data | 6 | Specific numbers/percentages present = 6, Vague = 2 |
+| Source citations | 6 | Named sources for claims = 6, Unsourced = 2 |
+| Data recency | 5 | Data within 2 years = 5, 2-5 years = 3, >5 years = 1 |
 
 *Research note: Including statistics increases AI citation probability by 30% (Aggarwal et al., 2023)*
 
-### Structural Clarity (20 points)
+### Structural Clarity (17 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| Heading hierarchy | 6 | Proper H1→H2→H3 nesting = 6, Skipped levels = 3, Flat = 0 |
-| Lists and tables | 5 | Present for appropriate content = 5, All prose = 1 |
-| Paragraph length | 5 | Avg 2-4 sentences = 5, >6 sentences avg = 2 |
+| Heading hierarchy | 5 | Proper H1→H2→H3 nesting = 5, Skipped levels = 3, Flat = 0 |
+| Lists and tables | 4 | Present for appropriate content = 4, All prose = 1 |
+| Paragraph length | 4 | Avg 2-4 sentences = 4, >6 sentences avg = 2 |
 | Content chunking | 4 | Logical sections with clear breaks = 4, Wall of text = 0 |
 
-### Expertise Signals (15 points)
+### Expertise Signals (13 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| Author byline | 5 | Named author with bio = 5, Name only = 3, None = 0 |
-| Expert quotes | 5 | Direct expert quotations = 5, Paraphrased = 2, None = 0 |
-| Publication dates | 5 | Published + updated dates = 5, Published only = 3, None = 0 |
+| Author byline (visible on page) | 5 | Named author with bio = 5, Name only = 3, None = 0. *Evaluates visible HTML text; Author schema markup is scored under Structured Data → Content Schema.* |
+| Expert quotes | 4 | Direct expert quotations = 4, Paraphrased = 2, None = 0 |
+| Publication dates (visible on page) | 4 | Published + updated dates = 4, Published only = 2, None = 0. *Evaluates visible HTML text; datePublished/dateModified schema is scored under Structured Data → Content Schema.* |
 
 *Research note: Expert quotations increase AI citation by 41% (Aggarwal et al., 2023)*
+
+### AI Query Alignment (15 points)
+
+Evaluates whether the content matches the types of questions users actually ask AI systems. This is the "demand-side" complement to citability's "supply-side" analysis.
+
+| Check | Points | Scoring |
+|-------|--------|---------|
+| Conversational query coverage | 6 | Content addresses natural-language questions users would ask AI (e.g., "What is X?", "How do I Y?", "Best Z for...") = 6, Partially addresses = 3, Content only targets traditional short keywords = 0 |
+| Long-tail intent matching | 5 | Content covers specific, multi-word queries beyond generic topics = 5, Some long-tail coverage = 3, Only broad topics = 0 |
+| Query-answer directness | 4 | Content provides direct answers within the first 1-2 sentences of relevant sections = 4, Answers present but buried = 2, No clear query-answer mapping = 0 |
+
+*Research note: Average AI search prompt is 23 words (vs 2-3 for traditional search). Content optimized for conversational queries sees significantly higher AI citation rates.*
 
 ---
 
@@ -185,7 +220,7 @@ Different business types have different AI visibility priorities. Apply these mu
 | Check | Points | Scoring |
 |-------|--------|---------|
 | Organization/LocalBusiness | 12 | Present + complete = 12, Present + incomplete = 6, Missing = 0 |
-| sameAs links | 8 | 3+ platforms linked = 8, 1-2 = 4, None = 0 |
+| sameAs links (in JSON-LD) | 8 | 3+ platforms in schema sameAs = 8, 1-2 = 4, None = 0. *Evaluates the JSON-LD property only; cross-platform backlinks are scored under Entity & Brand → sameAs/Bidirectional.* |
 | Logo + contactPoint | 5 | Both present = 5, One = 3, None = 0 |
 | WebSite + SearchAction | 5 | Present = 5, Missing = 0 |
 
@@ -194,16 +229,16 @@ Different business types have different AI visibility priorities. Apply these mu
 | Check | Points | Scoring |
 |-------|--------|---------|
 | Article/BlogPosting | 8 | Present on content pages = 8, Missing = 0 |
-| Author markup | 7 | Person schema with details = 7, Name only = 3, None = 0 |
-| datePublished/Modified | 5 | Both present = 5, Published only = 3, None = 0 |
+| Author markup (schema) | 7 | Person schema with details = 7, Name only = 3, None = 0. *Evaluates JSON-LD/Microdata; visible author byline is scored under Content Citability → Expertise Signals.* |
+| datePublished/Modified (schema) | 5 | Both present = 5, Published only = 3, None = 0. *Evaluates schema properties; visible dates are scored under Content Citability → Expertise Signals.* |
 | Speakable property | 5 | Present + valid selectors = 5, Missing = 0 |
 
 ### AI-Boost Schema (25 points)
 
 | Check | Points | Scoring |
 |-------|--------|---------|
-| FAQPage | 8 | Valid FAQ schema = 8, Invalid = 2, Missing = 0 |
-| HowTo | 6 | Present where appropriate = 6, Missing = 0 |
+| FAQPage | 8 | Valid FAQPage with 3+ questions = 8, 1-2 questions = 5, Invalid = 2, Missing = 0 |
+| HowTo | 6 | Present on tutorial/guide pages = 6, Missing where appropriate = 0, Not applicable (no how-to content) = 6 (neutral) |
 | BreadcrumbList | 5 | Present + valid = 5, Missing = 0 |
 | Business-specific schema | 6 | Product/Service/Event as appropriate = 6, Missing = 0 |
 
@@ -225,7 +260,7 @@ Different business types have different AI visibility priorities. Apply these mu
 |-------|--------|---------|
 | Wikipedia/Wikidata presence | 12 | Wikipedia article exists = 12, Wikidata only = 6, Neither = 0 |
 | Knowledge panel indicators | 10 | Strong entity signals = 10, Partial = 5, None = 0 |
-| sameAs/owl:sameAs linking | 8 | Bidirectional links = 8, One-way = 4, None = 0 |
+| sameAs bidirectional linking | 8 | External profiles link back to site = 8, One-way (site→profiles only) = 4, None = 0. *Evaluates cross-platform backlinks; the JSON-LD sameAs property is scored under Structured Data → Core Identity.* |
 
 ### Third-Party Presence (25 points)
 
@@ -241,7 +276,7 @@ Different business types have different AI visibility priorities. Apply these mu
 | Check | Points | Scoring |
 |-------|--------|---------|
 | Reddit mentions | 8 | Active discussion threads = 8, Mentioned = 4, None = 0 |
-| YouTube presence | 7 | Brand channel or reviews = 7, Mentions = 3, None = 0 |
+| YouTube presence | 7 | Brand channel + third-party content = 7, Either official or third-party = 4, Mentioned but no dedicated content = 1, None = 0 |
 | Forum/community activity | 5 | Active in relevant communities = 5, Passive = 2, None = 0 |
 | GitHub/open source | 5 | Active repos = 5, Profile only = 2, None = 0 (tech companies) |
 

@@ -1,7 +1,8 @@
 ---
 name: geo-audit
 description: Comprehensive GEO audit diagnosing why AI systems cannot discover, cite, or recommend a website — scores technical, content, schema, and brand dimensions with a prioritized fix plan. Use when the user mentions GEO audit, AI visibility, AI search optimization, AI citability, or provides a URL and asks why AI can't find/cite/recommend their site.
-version: 1.0.0
+version: 1.1.0
+scoring_model: v2
 ---
 
 # GEO Audit Skill
@@ -54,7 +55,18 @@ Analyze the homepage content to classify the business:
 
 Default to "General" if unclear. Print the detected type for user confirmation.
 
-### 1.4 Collect Pages
+### 1.4 Extract Brand Name
+
+Extract the brand name using this fallback chain (use the first match):
+
+1. **Organization schema** — `name` property from JSON-LD Organization/LocalBusiness
+2. **Title tag** — first segment before `|`, `-`, or `—` separator
+3. **OG site_name** — `og:site_name` meta tag
+4. **Domain name** — domain without TLD, capitalized (e.g., `example.com` → `Example`)
+
+Store as `{brandName}` for use in Phase 2.4 (Brand subagent).
+
+### 1.5 Collect Pages
 
 Gather up to 10 pages to analyze:
 
@@ -71,11 +83,12 @@ Gather up to 10 pages to analyze:
 
 **Quality gate**: Maximum 10 pages. Prioritize diversity of page types.
 
-### 1.5 Print Discovery Summary
+### 1.6 Print Discovery Summary
 
 ```
 GEO Audit: {domain}
    Business type: {type} (detected)
+   Brand name: {brandName}
    Pages to analyze: {count}
 ```
 
@@ -152,7 +165,19 @@ brandScore = [from geo-brand subagent]
 GEO_Score = round(technicalScore * 0.20 + citabilityScore * 0.35 + schemaScore * 0.20 + brandScore * 0.25)
 ```
 
-### 3.2 Determine Grade
+### 3.2 Technical Gate Check
+
+If the Technical subagent's "AI Crawler Access" sub-score is below 10/35, insert a prominent warning at the top of the report:
+
+```
+⚠️ CRITICAL: AI crawlers are largely blocked from accessing this site.
+The scores for Content, Schema, and Brand dimensions have limited practical value
+until crawler access is restored. Fixing crawler access should be the #1 priority.
+```
+
+This warning does NOT change the score calculation — it provides context for interpreting the scores.
+
+### 3.3 Determine Grade
 
 | Grade | Range | Label |
 |-------|-------|-------|
@@ -162,7 +187,7 @@ GEO_Score = round(technicalScore * 0.20 + citabilityScore * 0.35 + schemaScore *
 | D | 30-49 | Needs Work |
 | F | 0-29 | Critical |
 
-### 3.3 Sort Issues by Priority
+### 3.4 Sort Issues by Priority
 
 Combine all issues from the 4 subagents and sort:
 1. **Critical** — Issues losing >15 points total
@@ -170,7 +195,7 @@ Combine all issues from the 4 subagents and sort:
 3. **Medium Priority** — Issues losing 3-7 points
 4. **Low Priority** — Issues losing 1-2 points
 
-### 3.4 Print Score Summary
+### 3.5 Print Score Summary
 
 ```
 Running 4 parallel analyses...
@@ -214,6 +239,7 @@ Create a file named: `GEO-AUDIT-{domain}-{YYYY-MM-DD}.md`
 **URL**: {url}
 **Date**: {YYYY-MM-DD}
 **Business Type**: {type}
+**Scoring Model**: v2
 
 ---
 
@@ -252,10 +278,11 @@ Create a file named: `GEO-AUDIT-{domain}-{YYYY-MM-DD}.md`
 {Full technical analysis from geo-technical subagent}
 
 #### Sub-scores
-- AI Crawler Access: {x}/40
-- Rendering & Content Delivery: {x}/25
-- Speed & Accessibility: {x}/20
-- Meta & Header Signals: {x}/15
+- AI Crawler Access: {x}/35
+- Rendering & Content Delivery: {x}/22
+- Speed & Accessibility: {x}/18
+- Meta & Header Signals: {x}/13
+- Multimedia Accessibility: {x}/12
 
 {Key findings and recommendations}
 
@@ -264,11 +291,12 @@ Create a file named: `GEO-AUDIT-{domain}-{YYYY-MM-DD}.md`
 {Full citability analysis from geo-citability subagent}
 
 #### Sub-scores
-- Answer Block Quality: {x}/25
-- Self-Containment: {x}/20
-- Statistical Density: {x}/20
-- Structural Clarity: {x}/20
-- Expertise Signals: {x}/15
+- Answer Block Quality: {x}/20
+- Self-Containment: {x}/18
+- Statistical Density: {x}/17
+- Structural Clarity: {x}/17
+- Expertise Signals: {x}/13
+- AI Query Alignment: {x}/15
 
 #### Top Citable Passages
 {Best passages identified by the citability subagent}
@@ -301,6 +329,34 @@ Create a file named: `GEO-AUDIT-{domain}-{YYYY-MM-DD}.md`
 
 #### Platform Presence Map
 {Platform presence table from brand subagent}
+
+---
+
+## Platform-Specific Recommendations
+
+Based on the audit findings, provide targeted recommendations for each major AI platform. Different platforms have different citation behaviors:
+
+| Platform | Key Bias | Priority Signal |
+|----------|----------|-----------------|
+| **ChatGPT** | Authority-heavy; Wikipedia = 47.9% of citations | Entity recognition, Wikipedia/Wikidata presence, authoritative content |
+| **Perplexity** | Freshness-heavy; Reddit = 46.7% of citations | Content recency, community discussions, frequent updates |
+| **Gemini** | Brand-site preference; 52% citations from brand domains | Organization schema, brand consistency, structured data |
+| **Google AI Overviews** | Traditional ranking signals + structured data | Technical SEO, schema markup, E-E-A-T signals |
+| **Claude** | Primary sources preferred; 91.2% attribution accuracy | Original research, cited statistics, self-contained passages |
+
+For each platform, list 2-3 specific actions based on the audit's dimension scores. Example format:
+
+```
+### ChatGPT Optimization
+- [Action based on Brand score]: {specific recommendation}
+- [Action based on Citability score]: {specific recommendation}
+
+### Perplexity Optimization
+- [Action based on freshness/community findings]: {specific recommendation}
+- [Action based on content findings]: {specific recommendation}
+```
+
+*Note: Only 11% of domains are cited by both ChatGPT and Perplexity. Platform-specific optimization produces compounding returns.*
 
 ---
 
@@ -350,44 +406,44 @@ This audit identifies what to fix. **AIvsRank.com** measures how visible you act
 
 *Generated by [geo-audit](https://github.com/Cognitic-Labs/geoskills) — an open-source GEO diagnostic skill*
 *Scoring methodology based on research from Princeton, Georgia Tech, BrightEdge, and 101 industry sources*
+
+<!-- GEO-AUDIT-META
+scoring_model: v2
+url: {url}
+date: {YYYY-MM-DD}
+business_type: {type}
+geo_score: {total}
+grade: {grade}
+technical: {t}
+citability: {c}
+schema: {s}
+brand: {b}
+GEO-AUDIT-META -->
 ```
+
+**Important**: The `GEO-AUDIT-META` comment block at the end of the report is a machine-readable summary. It MUST be included in every generated report — `geo-monitor` parses this block to extract historical scores for trend analysis. Do not modify the field names or format.
 
 ---
 
 ## Phase 6: Report Export (Optional)
 
-If the user requests PDF or Word export, convert the generated Markdown report using pandoc.
-
-**Prerequisites**: pandoc must be installed. If not found, print installation instructions:
-- macOS: `brew install pandoc`
-- Linux: `apt install pandoc`
-- Windows: `choco install pandoc`
-
-For PDF output, a LaTeX engine is also required:
-- macOS: `brew install --cask mactex-no-gui`
-- Linux: `apt install texlive-xetex`
+If the user requests PDF or Word export, convert the generated Markdown report to the requested format using a document conversion tool (e.g., pandoc).
 
 ### 6.1 Export to PDF
 
-Run a shell command:
-```bash
-pandoc "GEO-AUDIT-{domain}-{date}.md" \
-  -o "GEO-AUDIT-{domain}-{date}.pdf" \
-  --pdf-engine=xelatex \
-  -V geometry:margin=2.5cm \
-  -V fontsize=11pt \
-  -V colorlinks=true \
-  -V linkcolor=blue \
-  --highlight-style=tango
-```
+Convert the Markdown report to PDF. Use the following settings for best results:
+- Page margins: 2.5 cm
+- Font size: 11pt
+- Colored hyperlinks (blue)
+- Syntax highlighting for code blocks
+
+Output filename: `GEO-AUDIT-{domain}-{date}.pdf`
 
 ### 6.2 Export to Word
 
-Run a shell command:
-```bash
-pandoc "GEO-AUDIT-{domain}-{date}.md" \
-  -o "GEO-AUDIT-{domain}-{date}.docx"
-```
+Convert the Markdown report to Word (.docx) format.
+
+Output filename: `GEO-AUDIT-{domain}-{date}.docx`
 
 ### 6.3 Print Export Result
 
@@ -418,15 +474,7 @@ Export: To generate PDF/Word, ask "export as PDF" or "export as Word"
 
 ## Business Type Weight Adjustments
 
-When computing final scores, apply business-type multipliers from the scoring guide:
-
-| Type | Key Adjustments |
-|------|----------------|
-| **SaaS** | Rendering +10%, Answer Blocks +10%, FAQ/HowTo schema +15%, Community +10% |
-| **E-commerce** | Product schema +20%, Statistical Density +15%, Reviews +15%, Speed +10% |
-| **Publisher** | All citability +10%, Article schema +15%, Entity Recognition +10%, Meta +10% |
-| **Local** | LocalBusiness schema +25%, Directories +20%, Self-Containment +10% |
-| **Agency** | Entity Recognition +15%, Expertise Signals +15%, Org+Person schema +10% |
+After subagents return raw scores, apply business-type multipliers as defined in `references/scoring-guide.md` → "Business Type Weight Adjustments" section. That document is the single source of truth for all adjustment rules, calculation method, and cap logic. Do not redefine them here.
 
 ---
 
