@@ -1,14 +1,16 @@
 ---
 name: geo-fix-content
 description: Rewrite website content to maximize AI citability — remove hedge language, add data support, improve self-containment, and optimize structure for AI engines. Use when the user asks to improve content for AI, fix citability, rewrite for AI, remove hedge words, or make content more citable.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # geo-fix-content Skill
 
 You analyze website content at the paragraph level and provide specific rewrites that maximize AI citability — the likelihood that AI systems will quote, cite, or recommend the content. Every suggestion preserves the original meaning while making the text more quotable, data-backed, and self-contained.
 
-Refer to `references/hedge-words.md` in this skill's directory for the hedge language dictionary and rewrite patterns.
+Refer to these reference files in this skill's directory:
+- `references/hedge-words.md` — Hedge language dictionary and rewrite patterns (eliminating weak language)
+- `references/quotable-content-examples.md` — Before/After examples of strong, citable content patterns (building quotable content)
 
 ---
 
@@ -153,9 +155,29 @@ For each rewritten paragraph:
 **Changes**:
 - {What was changed and why}
 - {What was changed and why}
+
+**Platform impact**: {Which AI platform benefits most from this rewrite and why}
 ```
 
-### 3.3 Rewrite Patterns
+### 3.3 AI Platform Citation Preferences
+
+Different AI platforms have different citation biases. When generating rewrites, tag each rewrite with the platform that benefits most:
+
+| Platform | Favors | Rewrite Implication |
+|----------|--------|-------------------|
+| **ChatGPT** | Authority, named sources, expert quotes | Rewrites adding expert attribution or named citations → tag "ChatGPT" |
+| **Perplexity** | Freshness, data recency, community signals | Rewrites adding dates, "as of [year]", recent statistics → tag "Perplexity" |
+| **Gemini** | Brand-site content, structured data context | Rewrites improving brand name consistency and self-containment → tag "Gemini" |
+| **Google AI Overviews** | Structured answers, tables, lists, FAQ patterns | Rewrites converting prose to tables/lists or adding Q&A format → tag "Google AIO" |
+| **Claude** | Primary sources, original data, cited statistics | Rewrites adding first-party data or specific research citations → tag "Claude" |
+
+When a rewrite benefits multiple platforms, list the primary one. Example:
+
+```
+**Platform impact**: Perplexity (added 2025 data with source — strong freshness signal)
+```
+
+### 3.4 Rewrite Patterns
 
 **Hedge → Confident:**
 - "might help" → "helps" or "reduces X by Y%"
@@ -181,7 +203,7 @@ For each rewritten paragraph:
 - Sequential steps → Numbered list
 - Features with details → Table (Feature | Description | Benefit)
 
-### 3.4 Skip Rules
+### 3.5 Skip Rules
 
 Do NOT rewrite paragraphs that:
 - Already score well on all dimensions
@@ -260,6 +282,55 @@ Top issues:
 
 Output: content-fix-{domain}-{date}.md
 ```
+
+---
+
+## Phase 5: Post-Optimization Validation
+
+After generating all rewrites, run a final self-check on the rewritten content. This catches issues that paragraph-level analysis may miss.
+
+### 5.1 Citability Self-Check
+
+Verify the rewritten content against these criteria:
+
+| # | Check | Pass Criteria | Status |
+|---|-------|--------------|--------|
+| 1 | **Direct answer in first 150 words** | The opening paragraph directly answers the page's primary question or states the core value proposition — no preamble | Pass/Fail |
+| 2 | **Data density** | At least 1 specific statistic or quantitative claim per 300 words (or `[TODO]` placeholder) | Pass/Fail |
+| 3 | **Citation frequency** | At least 1 named source per 500 words | Pass/Fail |
+| 4 | **Definition coverage** | All key terms defined at first use (acronyms expanded, jargon explained) | Pass/Fail |
+| 5 | **Self-containment** | No paragraph starts with unresolved "This", "It", "They" | Pass/Fail |
+| 6 | **Hedge-free zones** | Zero hedge words in definition blocks, lead paragraphs, and FAQ answers | Pass/Fail |
+| 7 | **Structural variety** | At least 1 table or comparison list, 1 numbered process, and 1 Q&A block in the full content (where applicable) | Pass/Fail |
+| 8 | **Freshness signals** | Dates, timeframes, or "as of [year]" present for statistical claims | Pass/Fail |
+| 9 | **Quotable passages** | At least 3 passages that are self-contained, factual, and under 60 words — ideal for AI extraction | Pass/Fail |
+| 10 | **No invented data** | All statistics are from the original content or marked `[TODO: add source]` — nothing fabricated | Pass/Fail |
+
+### 5.2 Validation Output
+
+Append the check results to the fix report:
+
+```markdown
+## Post-Optimization Validation
+
+| # | Check | Status |
+|---|-------|--------|
+| 1 | Direct answer in first 150 words | {Pass/Fail} |
+| 2 | Data density (≥1 stat per 300 words) | {Pass/Fail} |
+| 3 | Citation frequency (≥1 source per 500 words) | {Pass/Fail} |
+| 4 | Definition coverage | {Pass/Fail} |
+| 5 | Self-containment (no unresolved pronouns) | {Pass/Fail} |
+| 6 | Hedge-free zones | {Pass/Fail} |
+| 7 | Structural variety | {Pass/Fail} |
+| 8 | Freshness signals | {Pass/Fail} |
+| 9 | Quotable passages (≥3) | {Pass/Fail} |
+| 10 | No invented data | {Pass/Fail} |
+
+**Result**: {n}/10 passed
+{If any Fail: list specific items that need attention}
+```
+
+If fewer than 7 checks pass, flag the content as **needs additional work** and list the specific failures with fix suggestions.
 
 ---
 
