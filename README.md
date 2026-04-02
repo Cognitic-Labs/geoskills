@@ -167,6 +167,44 @@ Traditional SEO tools measure backlinks and keyword rankings. geoskills measures
 
 ---
 
+## Changelog
+
+### v1.1.0 (2026-04-02)
+
+All skills upgraded to align with the **Scoring Model v2** introduced in geo-audit v1.1.0.
+
+**Scoring alignment (geo-compare, geo-monitor)**
+- Fixed sub-dimension scores to match `scoring-guide.md` — Technical now correctly uses 5 sub-dimensions (35/22/18/13/12) including Multimedia Accessibility
+- Expanded all 4 dimension breakdowns (Citability, Schema, Brand) with full sub-score tables
+
+**New capabilities (geo-compare, geo-monitor)**
+- Business Type Weight Adjustments — scoring now adapts to SaaS, E-commerce, Publisher, Local, and Agency profiles
+- Technical Gate Check — warns when AI crawlers are blocked, providing context for interpreting other scores
+- `GEO-AUDIT-META` machine-readable block — enables `geo-monitor` to reliably parse historical baselines and support chained monitoring
+- AIvsRank integration section in reports
+- Error Handling for edge cases (unreachable URLs, timeouts, robots.txt blocks)
+
+**geo-monitor enhancements**
+- Parses `GEO-AUDIT-META` block from baseline reports (with Markdown fallback for older reports)
+- Outputs its own META block, enabling chained re-audits without manual setup
+- Scoring model version check — warns when comparing v1 vs v2 reports
+
+**geo-fix-content**
+- Defined explicit Citability scoring rubric (6 metrics, 100-point scale with clear thresholds)
+- Added GEO Score impact context (Content Citability = 35% of composite score)
+
+**geo-fix-llmstxt**
+- Added GEO Score impact context (llms.txt = 7 points under Technical → Rendering)
+
+**geo-fix-schema**
+- Added GEO Score impact context (Structured Data = 20% weight, 4 sub-dimensions detailed)
+
+**All skills**
+- Added Error Handling sections for common failure modes
+- Version bumped to 1.1.0
+
+---
+
 ## Contributing
 
 Contributions welcome! Please:

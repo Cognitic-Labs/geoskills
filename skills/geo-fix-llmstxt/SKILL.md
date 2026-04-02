@@ -1,7 +1,7 @@
 ---
 name: geo-fix-llmstxt
 description: Generate llms.txt and llms-full.txt files for a website to improve AI discoverability. Use when the user asks to create llms.txt, generate llms.txt, fix llms.txt, make site AI-readable, or mentions llms.txt generation.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # geo-fix-llmstxt Skill
@@ -9,6 +9,15 @@ version: 1.0.0
 You generate specification-compliant `llms.txt` and `llms-full.txt` files that help AI systems understand and cite a website's content. The output follows the [llmstxt.org](https://llmstxt.org/) proposed standard.
 
 Refer to `references/llmstxt-spec.md` in this skill's directory for the full specification reference.
+
+### GEO Score Impact
+
+In the geo-audit scoring model (v2), llms.txt is scored under **Technical Accessibility → Rendering & Content Delivery** and is worth **7 points** out of 100 in that dimension:
+- Present + valid = 7 points
+- Present + incomplete = 4 points
+- Missing = 0 points
+
+Since Technical Accessibility carries a **20% weight** in the composite GEO Score, a complete llms.txt contributes up to **1.4 points** to the final composite score. While modest on its own, it also improves AI crawlers' ability to understand site structure, which has indirect benefits across all dimensions.
 
 ---
 
@@ -224,13 +233,13 @@ If an existing llms.txt was found in Phase 1.2, analyze and improve it:
 ### 4.1 Validate Structure
 
 Check against the spec:
-- [ ] Has H1 with site name
-- [ ] Has blockquote summary
-- [ ] H2 sections with link lists
-- [ ] Links use `[Title](URL): Description` format
-- [ ] No broken links (fetch each to verify)
-- [ ] No H3+ headings (spec violation)
-- [ ] Pure Markdown (no HTML)
+- Has H1 with site name
+- Has blockquote summary
+- H2 sections with link lists
+- Links use `[Title](URL): Description` format
+- No broken links (fetch each to verify)
+- No H3+ headings (spec violation)
+- Pure Markdown (no HTML)
 
 ### 4.2 Content Gap Analysis
 
@@ -280,6 +289,18 @@ Installation:
   Add to robots.txt (optional):
   Sitemap: https://{domain}/llms.txt
 ```
+
+---
+
+## Error Handling
+
+- **URL unreachable**: Report the error and stop — llms.txt cannot be generated without accessing the site
+- **No sitemap found**: Proceed using homepage navigation links and footer links to discover pages; note reduced coverage in the output
+- **robots.txt blocks us**: Note the restriction, only include accessible pages in llms.txt
+- **Broken links in existing llms.txt**: In Improvement Mode, flag each broken link and suggest replacement or removal
+- **Rate limiting**: Wait 1 second between requests to the same domain
+- **Timeout**: 30 seconds per URL fetch
+- **Too many pages (>100 in sitemap)**: Prioritize by page type importance (Docs > Products > Blog > About > Legal), cap at 100 links in llms.txt and 50 pages in llms-full.txt
 
 ---
 

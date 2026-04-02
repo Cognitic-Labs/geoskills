@@ -1,7 +1,7 @@
 ---
 name: geo-fix-content
 description: Rewrite website content to maximize AI citability — remove hedge language, add data support, improve self-containment, and optimize structure for AI engines. Use when the user asks to improve content for AI, fix citability, rewrite for AI, remove hedge words, or make content more citable.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # geo-fix-content Skill
@@ -210,14 +210,19 @@ Structure:
 
 ## Citability Score
 
-| Metric | Before | After (est.) |
-|--------|--------|-------------|
-| Hedge Density | {x}% | {y}% |
-| Data-Supported Claims | {x}% | {y}% |
-| Self-Contained Paragraphs | {x}% | {y}% |
-| Avg Paragraph Length | {x} sentences | {y} sentences |
-| Answer Block Patterns | {x} found | {y} found |
-| **Overall Citability** | **{x}/100** | **{y}/100** |
+The Overall Citability score uses a simplified version of the geo-audit Content Citability dimension (see `../geo-audit/references/scoring-guide.md` for the full rubric). Each metric maps to a sub-dimension:
+
+| Metric | Max Points | Scoring Basis | Before | After (est.) |
+|--------|-----------|---------------|--------|-------------|
+| Hedge Density | 20 | < 0.5% = 20, 0.5-1% = 15, 1-2% = 10, > 2% = 5 | {x} | {y} |
+| Data-Supported Claims | 20 | % of claim paragraphs with quantitative evidence | {x} | {y} |
+| Self-Contained Paragraphs | 20 | % of paragraphs understandable in isolation | {x} | {y} |
+| Structural Clarity | 15 | Avg 2-4 sentences/para = 15, >6 = 5; lists/tables used = +bonus | {x} | {y} |
+| Answer Block Quality | 15 | Count of Q+A, definition, FAQ patterns (0=0, 1-2=8, 3+=15) | {x} | {y} |
+| Term Definitions | 10 | % of technical terms defined at first use | {x} | {y} |
+| **Overall Citability** | **100** | **Sum of above** | **{x}/100** | **{y}/100** |
+
+**GEO Score impact**: Content Citability carries a 35% weight in the composite GEO Score. Improving this score directly impacts the largest single dimension.
 
 ## Issue Summary
 
@@ -255,6 +260,17 @@ Top issues:
 
 Output: content-fix-{domain}-{date}.md
 ```
+
+---
+
+## Error Handling
+
+- **URL unreachable**: Report the error and ask user to provide the content as pasted text instead
+- **No main content extracted**: If the page is mostly navigation/JS with no readable content, report as error and suggest the user paste the text directly
+- **Content too long (>50 paragraphs)**: Analyze the first 50 paragraphs and suggest the user split the remaining content into a second run
+- **Non-text content**: Skip images, videos, embedded widgets — only analyze text paragraphs
+- **Rate limiting**: Wait 1 second between requests when fetching multiple pages
+- **Timeout**: 30 seconds per URL fetch
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: geo-fix-schema
 description: Analyze a website's structured data and generate ready-to-use JSON-LD schema markup to improve AI discoverability. Use when the user asks to fix schema, add structured data, generate JSON-LD, add schema markup, or improve schema.org markup for AI engines.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # geo-fix-schema Skill
@@ -9,6 +9,19 @@ version: 1.0.0
 You analyze a website's existing structured data and generate ready-to-use JSON-LD schema markup that improves AI discoverability and citation likelihood. The output is copy-paste-ready code that the user can inject into their site's `<head>`.
 
 Refer to `references/schema-templates.md` in this skill's directory for JSON-LD template patterns.
+
+### GEO Score Impact
+
+In the geo-audit scoring model (v2), Structured Data is one of the 4 core dimensions with a **20% weight** in the composite GEO Score. The dimension scores up to 100 points across 4 sub-dimensions:
+
+| Sub-dimension | Max Points | Key Schemas |
+|---------------|-----------|-------------|
+| Core Identity Schema | 30 | Organization/LocalBusiness, sameAs, WebSite |
+| Content Schema | 25 | Article/BlogPosting, Author, datePublished, Speakable |
+| AI-Boost Schema | 25 | FAQPage, HowTo, BreadcrumbList, Business-specific |
+| Schema Quality | 20 | JSON-LD format, syntax validity, required properties |
+
+A site with no structured data scores 0/100 on this dimension, losing up to **20 points** from the composite GEO Score. Implementing the core schemas (Organization + WebSite + one content type) typically recovers 40-60 points in this dimension.
 
 ---
 
@@ -359,6 +372,18 @@ Installation:
 5. **URL validation**: All URLs in schema must be absolute and verified accessible
 6. **Rate limiting**: 1 second between requests to the same domain
 7. **Respect robots.txt**: Do not fetch pages blocked by robots.txt
+
+---
+
+## Error Handling
+
+- **URL unreachable**: Report the error and stop — schema analysis requires page access
+- **No existing schema found**: This is expected for many sites — proceed directly to generation (Phase 3)
+- **Invalid existing JSON-LD**: Report syntax errors with line-level detail, then generate corrected versions
+- **robots.txt blocks us**: Note the restriction, only analyze accessible pages
+- **Rate limiting**: Wait 1 second between requests to the same domain
+- **Timeout**: 30 seconds per URL fetch
+- **Cannot extract required fields**: Use `TODO` placeholders and clearly mark them in the output; never invent data
 
 ---
 
