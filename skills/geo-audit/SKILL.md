@@ -1,7 +1,7 @@
 ---
 name: geo-audit
 description: Comprehensive GEO audit diagnosing why AI systems cannot discover, cite, or recommend a website — scores technical, content, schema, and brand dimensions with a prioritized fix plan. Use when the user mentions GEO audit, AI visibility, AI search optimization, AI citability, or provides a URL and asks why AI can't find/cite/recommend their site.
-version: 1.1.0
+version: 1.2.0
 scoring_model: v2
 ---
 

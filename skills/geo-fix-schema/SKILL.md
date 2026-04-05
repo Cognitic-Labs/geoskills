@@ -1,7 +1,7 @@
 ---
 name: geo-fix-schema
 description: Analyze a website's structured data and generate ready-to-use JSON-LD schema markup to improve AI discoverability. Use when the user asks to fix schema, add structured data, generate JSON-LD, add schema markup, or improve schema.org markup for AI engines.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # geo-fix-schema Skill

@@ -1,7 +1,7 @@
 ---
 name: geo-monitor
 description: Re-audit a website and compare scores against a previous GEO audit baseline to track improvement over time. Use when the user asks to re-audit, check progress, track GEO score changes, monitor improvements, or compare before and after optimization.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # geo-monitor Skill

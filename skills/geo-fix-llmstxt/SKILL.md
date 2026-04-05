@@ -1,7 +1,7 @@
 ---
 name: geo-fix-llmstxt
 description: Generate llms.txt and llms-full.txt files for a website to improve AI discoverability. Use when the user asks to create llms.txt, generate llms.txt, fix llms.txt, make site AI-readable, or mentions llms.txt generation.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # geo-fix-llmstxt Skill
